@@ -1,0 +1,266 @@
+basePath: /api
+definitions:
+  entity.Product:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      price:
+        type: number
+      stock:
+        type: integer
+    type: object
+  handler.StoreResponse:
+    properties:
+      alamat:
+        type: string
+      nama_store:
+        type: string
+    type: object
+  handler.TransactionRequest:
+    properties:
+      product_id:
+        type: integer
+      quantity:
+        type: integer
+      store_id:
+        type: integer
+    required:
+    - product_id
+    - quantity
+    - store_id
+    type: object
+  handler.UserLogin:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  handler.UserRegistration:
+    properties:
+      deposit_amount:
+        type: number
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - deposit_amount
+    - password
+    - username
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API for managing Avengers
+  title: API Avengers
+  version: "1.0"
+paths:
+  /api/products:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of available products
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of products
+          schema:
+            items:
+              $ref: '#/definitions/entity.Product'
+            type: array
+        "500":
+          description: Failed to fetch products
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Get a list of products
+      tags:
+      - Products
+  /api/transactions:
+    post:
+      consumes:
+      - application/json
+      description: Create a new transaction for a user to purchase products
+      parameters:
+      - description: Transaction Information
+        in: body
+        name: transaction
+        required: true
+        schema:
+          $ref: '#/definitions/handler.TransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Transaction successful
+          schema:
+            type: string
+        "400":
+          description: Insufficient balance
+          schema:
+            type: string
+        "404":
+          description: Product not found
+          schema:
+            type: string
+        "500":
+          description: Failed to update product stock
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Create a new transaction
+      tags:
+      - Transactions
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Log in with the provided username and password
+      parameters:
+      - description: User Login Information
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UserLogin'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Login successful
+          schema:
+            type: string
+        "400":
+          description: Invalid request data
+          schema:
+            type: string
+        "401":
+          description: Invalid credentials
+          schema:
+            type: string
+        "500":
+          description: Failed to generate token
+          schema:
+            type: string
+      summary: Log in as a user
+      tags:
+      - Users
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user with the provided information
+      parameters:
+      - description: User Registration Information
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UserRegistration'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User registered successfully
+          schema:
+            type: string
+        "400":
+          description: Invalid request data
+          schema:
+            type: string
+        "500":
+          description: Failed to register user
+          schema:
+            type: string
+      summary: Register a new user
+      tags:
+      - Users
+  /stores:
+    get:
+      description: Mengembalikan daftar toko dengan nama dan alamat.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Authorization:
+              description: Bearer <token>
+              type: string
+          schema:
+            items:
+              $ref: '#/definitions/handler.StoreResponse'
+            type: array
+        "401":
+          description: Missing token
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Invalid token
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Failed to fetch stores
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Mendapatkan daftar toko
+  /stores/{id}:
+    get:
+      description: Mengembalikan detail toko beserta data cuaca dan total penjualan.
+      parameters:
+      - description: ID toko
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Authorization:
+              description: Bearer <token>
+              type: string
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid store ID
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Missing token
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Invalid token
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Store not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Failed to get weather data
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Mendapatkan detail toko
+swagger: "2.0"
